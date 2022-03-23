@@ -53,4 +53,35 @@ public class BookService {
             return this.bookRepository.save(book);
         });
     }
+
+    public String borrowBook(String name){
+        Mono<Book> book = this.getBookByName(name);
+        Book currBook = book.block();
+        if (currBook.getAvailable()){
+            currBook.setId(currBook.getId());
+            currBook.setAvailable(false);
+            this.bookRepository.save(currBook);
+            return "Here you have the book: " + name;
+        }
+        return "Sorry, the book has been borrowed";
+    }
+
+    public String returnBook(String name){
+        Mono<Book> book = this.getBookByName(name);
+        Book currBook = book.block();
+        if (!currBook.getAvailable()){
+            currBook.setId(currBook.getId());
+            currBook.setAvailable(true);
+            this.bookRepository.save(currBook);
+            return "You have returned the book: " + name;
+        }
+        return "Sorry, this book was not borrow";
+    }
+
+    //DELETE METHODS
+
+    public void eraseBook(String id){
+        Mono<Book> bookToErase = this.bookRepository.findById(id);
+        this.bookRepository.delete(bookToErase.block());
+    }
 }
